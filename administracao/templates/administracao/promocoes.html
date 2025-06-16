@@ -1,0 +1,45 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Promoções{% endblock %}
+
+{% block content %}
+  <h2 class="mt-3">Gerenciar Promoções</h2>
+
+  <div class="text-end mb-3">
+    <a href="{% url 'nova_promocao' %}" class="btn btn-success">+ Nova Promoção</a>
+  </div>
+
+  <h4>Ativas</h4>
+  <ul class="list-group mb-4">
+    {% for promo in ativas %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>
+          <strong>{{ promo.tipo|title }}:</strong>
+          {% for p in promo.produto.all %}{{ p.nome }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          <br>
+          Vigência: {{ promo.data_inicio }} – {{ promo.data_fim }}
+        </div>
+        <div>
+          <a href="{% url 'editar_promocao' promo.id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+          <a href="{% url 'inativar_promocao' promo.id %}" class="btn btn-sm btn-outline-danger">Inativar</a>
+        </div>
+      </li>
+    {% empty %}
+      <li class="list-group-item">Nenhuma promoção ativa.</li>
+    {% endfor %}
+  </ul>
+
+  <h4>Inativas</h4>
+  <ul class="list-group">
+    {% for promo in inativas %}
+      <li class="list-group-item">
+        <strong>{{ promo.tipo|title }} (Inativa)</strong><br>
+        Produtos: {% for p in promo.produto.all %}{{ p.nome }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        <br>
+        Vigência: {{ promo.data_inicio }} – {{ promo.data_fim }}
+      </li>
+    {% empty %}
+      <li class="list-group-item">Nenhuma promoção inativa.</li>
+    {% endfor %}
+  </ul>
+{% endblock %}

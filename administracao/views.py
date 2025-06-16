@@ -1,0 +1,80 @@
+from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404
+from produtos.models import Produto, Categoria
+from .forms import PromocaoForm
+from .models import Promocao
+from datetime import date
+
+def dashboard(request):
+    produtos = Produto.objects.all()
+    produtos_vencendo = Produto.objects.filter(validade__lte=date.today())
+    return render(request, 'administracao/dashboard.html', {
+        'produtos': produtos,
+        'vencendo': produtos_vencendo,
+    })
+
+    promocoes_ativas = Promocao.objects.filter(
+    data_inicio__lte=date.today(),
+    data_fim__gte=date.today(),
+    ativa=True
+)
+
+def produtos(request):
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+    categoria_id = request.GET.get('categoria')
+
+    produtos = Produto.objects.all()
+
+    if data_inicio and data_fim:
+        produtos = produtos.filter(validade__range=[data_inicio, data_fim])
+
+    if categoria_id and categoria_id != '':
+        produtos = produtos.filter(categoria__id=categoria_id)
+
+    categorias = Categoria.objects.all()
+
+    return render(request, 'administracao/produtos.html', {
+        'produtos': produtos,
+        'categorias': categorias,
+        'filtro_data_inicio': data_inicio,
+        'filtro_data_fim': data_fim,
+        'filtro_categoria': int(categoria_id) if categoria_id else '',
+    })
+    
+def nova_promocao(request):
+    if request.method == 'POST':
+        form = PromocaoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_dashboard')
+    else:
+        form = PromocaoForm()
+    return render(request, 'administracao/nova_promocao.html', {'form': form})
+
+def editar_promocao(request, promocao_id):
+    promocao = get_object_or_404(Promocao, id=promocao_id)
+    if request.method == 'POST':
+        form = PromocaoForm(request.POST, instance=promocao)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_dashboard')
+    else:
+        form = PromocaoForm(instance=promocao)
+    return render(request, 'administracao/nova_promocao.html', {'form': form})
+
+def inativar_promocao(request, promocao_id):
+    promocao = get_object_or_404(Promocao, id=promocao_id)
+    promocao.ativa = False
+    promocao.save()
+    return redirect('admin_dashboard')
+
+from .models import Promocao
+
+def promocoes(request):
+    promocoes_ativas = Promocao.objects.filter(ativa=True)
+    promocoes_inativas = Promocao.objects.filter(ativa=False)
+    return render(request, 'administracao/promocoes.html', {
+        'ativas': promocoes_ativas,
+        'inativas': promocoes_inativas,
+    })

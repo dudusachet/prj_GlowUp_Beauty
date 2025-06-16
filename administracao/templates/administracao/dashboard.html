@@ -1,0 +1,80 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Dashboard - Admin{% endblock %}
+
+{% block content %}
+  <h2 class="mt-3">Painel de Controle</h2>
+
+  <section class="mt-4">
+    <h4>Produtos Cadastrados</h4>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Categoria</th>
+          <th>Marca</th>
+          <th>Estoque</th>
+          <th>Validade</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for produto in produtos %}
+        <tr>
+          <td>{{ produto.nome }}</td>
+          <td>{{ produto.categoria.nome }}</td>
+          <td>{{ produto.marca }}</td>
+          <td>{{ produto.estoque }}</td>
+          <td>{{ produto.validade }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5">Nenhum produto encontrado.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="mt-5">
+    <h4>Produtos com Validade Vencida ou Próxima</h4>
+    <table class="table table-warning">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Validade</th>
+          <th>Estoque</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for produto in vencendo %}
+        <tr>
+          <td>{{ produto.nome }}</td>
+          <td>{{ produto.validade }}</td>
+          <td>{{ produto.estoque }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">Nenhum produto vencendo.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="mt-5">
+  <h4>Promoções Ativas</h4>
+  <ul class="list-group">
+    {% for promo in promocoes %}
+      
+      <li class="list-group-item">
+        <strong>{{ promo.tipo|title }}:</strong>
+        {% for p in promo.produto.all %}{{ p.nome }}{% if not forloop.last %}, {% endif %}{% endfor %} –
+        de {{ promo.data_inicio }} até {{ promo.data_fim }}
+      </li>
+    {% empty %}
+      <li class="list-group-item">Nenhuma promoção ativa no momento.</li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% endblock %}

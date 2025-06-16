@@ -1,0 +1,68 @@
+{% extends 'base_admin.html' %}
+
+{% block title %}Gerenciar Produtos{% endblock %}
+
+{% block content %}
+  <h2 class="mt-3">Gerenciar Produtos</h2>
+
+  <div class="text-end mb-3">
+    <a href="#" class="btn btn-success">+ Novo Produto</a>
+  </div>
+
+    <form method="get" class="row g-3 mb-4">
+    <div class="col-md-3">
+      <label class="form-label">Data de Início</label>
+      <input type="date" name="data_inicio" class="form-control" value="{{ filtro_data_inicio }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Data de Fim</label>
+      <input type="date" name="data_fim" class="form-control" value="{{ filtro_data_fim }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Categoria</label>
+      <select name="categoria" class="form-select">
+        <option value="">Todas</option>
+        {% for categoria in categorias %}
+        <option value="{{ categoria.id }}" {% if categoria.id == filtro_categoria %}selected{% endif %}>
+          {{ categoria.nome }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+  </form>
+
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>Nome</th>
+        <th>Categoria</th>
+        <th>Marca</th>
+        <th>Preço</th>
+        <th>Estoque</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for produto in produtos %}
+      <tr>
+        <td>{{ produto.nome }}</td>
+        <td>{{ produto.categoria.nome }}</td>
+        <td>{{ produto.marca }}</td>
+        <td>R$ {{ produto.preco }}</td>
+        <td>{{ produto.estoque }}</td>
+        <td>
+          <a href="#" class="btn btn-sm btn-primary">Editar</a>
+          <a href="#" class="btn btn-sm btn-danger">Remover</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6">Nenhum produto cadastrado.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
