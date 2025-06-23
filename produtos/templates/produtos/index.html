@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}GlowUp - Início{% endblock %}
+
+{% block content %}
+<div class="row">
+
+  <!-- BARRA LATERAL -->
+  <aside class="col-md-3">
+    <h5>Categorias</h5>
+    <div class="list-group">
+      {% for categoria in categorias %}
+        <div class="list-group-item">
+          <a href="?categoria_id={{ categoria.id }}">{{ categoria.nome }}</a>
+          <ul class="list-unstyled ms-3">
+            {% for sub in categoria.subcategorias.all %}
+              <li><a href="?categoria={{ sub.id }}">{{ sub.nome }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </div>
+
+    <hr>
+
+    <h5>Filtros</h5>
+    <form method="get">
+      <label class="form-label">Subcategoria</label>
+      <select name="subcategoria" class="form-select mb-2">
+        <option value="">Todas</option>
+        {% for sub in subcategorias %}
+          <option value="{{ sub.id }}" {% if sub.id|stringformat:"s" == filtro_subcategoria %}selected{% endif %}>{{ sub.nome }}</option>
+        {% endfor %}
+      </select>
+
+      <label class="form-label">Marca</label>
+      <select name="marca" class="form-select mb-2">
+        <option value="">Todas</option>
+        {% for marca in marcas %}
+          <option value="{{ marca }}" {% if marca == filtro_marca %}selected{% endif %}>{{ marca }}</option>
+        {% endfor %}
+      </select>
+
+      <label class="form-label">Preço</label>
+      <div class="d-flex gap-2">
+        <input type="number" name="preco_min" class="form-control" placeholder="Mín." value="{{ preco_min }}">
+        <input type="number" name="preco_max" class="form-control" placeholder="Máx." value="{{ preco_max }}">
+      </div>
+
+      <button class="btn btn-primary w-100 mt-3">Filtrar</button>
+    </form>
+  </aside>
+
+  <!-- LISTA DE PRODUTOS -->
+  <main class="col-md-9">
+    <h3 class="mb-4">Produtos</h3>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+
+      {% for produto in produtos %}
+        <div class="col">
+          <a href="{% url 'produto_detalhe' produto.id %}" class="text-decoration-none text-dark">
+            <div class="card h-100">
+              {% if produto.imagem %}
+                <img src="{{ produto.imagem.url }}" class="card-img-top" alt="{{ produto.nome }}">
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">{{ produto.nome }}</h5>
+                <p class="card-text">Marca: {{ produto.marca }}<br>R$ {{ produto.preco }}</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      {% empty %}
+        <p>Nenhum produto encontrado.</p>
+      {% endfor %}
+    </div>
+  </main>
+
+</div>
+{% endblock %}

@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.shortcuts import get_object_or_404
-from produtos.models import Produto, Categoria
+from produtos.models import Produto, Categoria, Subcategoria
 from .forms import PromocaoForm
+from .forms import ProdutoForm
 from .models import Promocao
 from datetime import date
 
@@ -13,11 +14,6 @@ def dashboard(request):
         'vencendo': produtos_vencendo,
     })
 
-    promocoes_ativas = Promocao.objects.filter(
-    data_inicio__lte=date.today(),
-    data_fim__gte=date.today(),
-    ativa=True
-)
 
 def produtos(request):
     data_inicio = request.GET.get('data_inicio')
@@ -69,8 +65,6 @@ def inativar_promocao(request, promocao_id):
     promocao.save()
     return redirect('admin_dashboard')
 
-from .models import Promocao
-
 def promocoes(request):
     promocoes_ativas = Promocao.objects.filter(ativa=True)
     promocoes_inativas = Promocao.objects.filter(ativa=False)
@@ -78,3 +72,52 @@ def promocoes(request):
         'ativas': promocoes_ativas,
         'inativas': promocoes_inativas,
     })
+    
+
+def novo_produto(request):
+    if request.method == 'POST':
+        form = ProdutoForm(request.POST, request.FILES)
+        if form.is_valid():
+            produto = form.save(commit=False)
+
+            # Criar nova categoria, se for o caso
+            nova_categoria = form.cleaned_data.get('nova_categoria')
+            if nova_categoria:
+                categoria = Categoria.objects.create(nome=nova_categoria)
+                produto.categoria = categoria
+            else:
+                categoria = form.cleaned_data.get('categoria')
+
+            # Criar nova subcategoria, se for o caso
+            nova_sub = form.cleaned_data.get('nova_subcategoria')
+            if nova_sub:
+                subcategoria = Subcategoria.objects.create(
+                    nome=nova_sub,
+                    categoria=produto.categoria or categoria
+                )
+                produto.subcategoria = subcategoria
+            else:
+                produto.subcategoria = form.cleaned_data.get('subcategoria')
+
+            produto.save()
+            return redirect('admin_produtos')
+    else:
+        form = ProdutoForm()
+    return render(request, 'administracao/form_produto.html', {'form': form, 'titulo': 'Novo Produto'})
+
+
+def editar_produto(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+    if request.method == 'POST':
+        form = ProdutoForm(request.POST, request.FILES, instance=produto)
+        if form.is_valid():
+            form.save()
+            return redirect('admin_produtos')
+    else:
+        form = ProdutoForm(instance=produto)
+    return render(request, 'administracao/form_produto.html', {'form': form, 'titulo': 'Editar Produto'})
+
+def remover_produto(request, produto_id):
+    produto = get_object_or_404(Produto, id=produto_id)
+    produto.delete()
+    return redirect('admin_produtos')

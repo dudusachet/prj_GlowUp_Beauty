@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}{{ produto.nome }}{% endblock %}
+
+{% block content %}
+<div class="row align-items-center">
+
+  <!-- FOTO -->
+  <div class="col-md-6 text-center">
+    {% if produto.imagem %}
+      <img src="{{ produto.imagem.url }}" alt="{{ produto.nome }}" class="img-fluid rounded border shadow-sm" style="max-height: 500px;">
+    {% else %}
+      <p>Imagem não disponível.</p>
+    {% endif %}
+  </div>
+
+  <!-- INFORMAÇÕES -->
+  <div class="col-md-6">
+    <h2>{{ produto.nome }}</h2>
+    <p class="text-muted">Marca: {{ produto.marca }}</p>
+    <p class="text-muted">Cor: {{ produto.cor|default:"Não informado" }}</p>
+    <h4 class="mt-4 text-danger">R$ {{ produto.preco }}</h4>
+
+    <form method="post" action="#">
+        {% csrf_token %}
+        <a href="{% url 'adicionar_ao_carrinho' produto.id %}" class="btn btn-lg btn-success mt-3">
+            Adicionar ao Carrinho
+        </a>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

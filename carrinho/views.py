@@ -1,19 +1,54 @@
-from django.shortcuts import render, redirect
-from .models import Carrinho, ItemCarrinho
+
 from produtos.models import Produto
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from produtos.models import Produto
 
-@login_required
-def ver_carrinho(request):
-    carrinho, created = Carrinho.objects.get_or_create(usuario=request.user, finalizado=False)
-    return render(request, 'carrinho/carrinho.html', {'carrinho': carrinho})
 
-@login_required
+def carrinho(request):
+    carrinho = request.session.get('carrinho', {})
+
+    if request.method == 'POST':
+        acao = request.POST.get('acao')
+        produto_id = request.POST.get('produto_id')
+        if produto_id:
+            if acao == 'remover':
+                carrinho.pop(produto_id, None)
+            elif acao == 'atualizar':
+                nova_qtd = int(request.POST.get('quantidade', 1))
+                carrinho[produto_id] = max(1, nova_qtd)
+            request.session['carrinho'] = carrinho
+        return redirect('ver_carrinho')
+
+    # exibição dos itens
+    produtos = []
+    total = 0
+    for id_str, qtd in carrinho.items():
+        produto = Produto.objects.get(id=int(id_str))
+        subtotal = produto.preco * qtd
+        produtos.append({
+            'produto': produto,
+            'quantidade': qtd,
+            'subtotal': subtotal,
+        })
+        total += subtotal
+
+    return render(request, 'carrinho/carrinho.html', {
+        'produtos': produtos,
+        'total': total,
+    })
+
+
 def adicionar_ao_carrinho(request, produto_id):
-    produto = Produto.objects.get(id=produto_id)
-    carrinho, created = Carrinho.objects.get_or_create(usuario=request.user, finalizado=False)
-    item, created = ItemCarrinho.objects.get_or_create(carrinho=carrinho, produto=produto)
-    item.quantidade += 1
-    item.preco_unitario = produto.preco
-    item.save()
-    return redirect('ver_carrinho')
+    produto = get_object_or_404(Produto, id=produto_id)
+
+    carrinho = request.session.get('carrinho', {})
+
+    if str(produto_id) in carrinho:
+        carrinho[str(produto_id)] += 1
+    else:
+        carrinho[str(produto_id)] = 1
+
+    request.session['carrinho'] = carrinho
+    return redirect('detalhes_produto', produto_id=produto_id)
+
