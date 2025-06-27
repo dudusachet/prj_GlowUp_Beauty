@@ -1,4 +1,5 @@
 
+from django.http import JsonResponse
 from produtos.models import Produto
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -6,6 +7,8 @@ from produtos.models import Produto
 
 
 def carrinho(request):
+    """Funçaõ que renderiza na tela o carrinho de compras do cliente
+    """    
     carrinho = request.session.get('carrinho', {})
 
     if request.method == 'POST':
@@ -40,6 +43,8 @@ def carrinho(request):
 
 
 def adicionar_ao_carrinho(request, produto_id):
+    """Função para adicionar um item ao carrinho
+    """    
     produto = get_object_or_404(Produto, id=produto_id)
 
     carrinho = request.session.get('carrinho', {})
@@ -50,5 +55,30 @@ def adicionar_ao_carrinho(request, produto_id):
         carrinho[str(produto_id)] = 1
 
     request.session['carrinho'] = carrinho
-    return redirect('detalhes_produto', produto_id=produto_id)
+    return redirect('detalhes_produto', id=produto_id)
 
+
+def carrinho_json(request):
+    """Função que retorna o json dos itens no carrinho
+    """
+    carrinho = request.session.get('carrinho', {})
+    itens = []
+    total = 0
+
+    for id_str, qtd in carrinho.items():
+        try:
+            produto = Produto.objects.get(id=int(id_str))
+            subtotal = produto.preco * qtd
+            itens.append({
+                'id': produto.id,
+                'nome': produto.nome,
+                'preco': float(produto.preco),
+                'imagem': produto.imagem.url if produto.imagem else '',
+                'quantidade': qtd,
+                'subtotal': float(subtotal),
+            })
+            total += subtotal
+        except Produto.DoesNotExist:
+            continue
+
+    return JsonResponse({'produtos': itens, 'total': float(total)})

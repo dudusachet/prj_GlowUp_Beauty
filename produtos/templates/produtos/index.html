@@ -15,7 +15,7 @@
           <a href="?categoria_id={{ categoria.id }}">{{ categoria.nome }}</a>
           <ul class="list-unstyled ms-3">
             {% for sub in categoria.subcategorias.all %}
-              <li><a href="?categoria={{ sub.id }}">{{ sub.nome }}</a></li>
+              <li><a href="?subcategoria={{ sub.id }}">{{ sub.nome }}</a></li>
             {% endfor %}
           </ul>
         </div>
@@ -55,27 +55,53 @@
   <!-- LISTA DE PRODUTOS -->
   <main class="col-md-9">
     <h3 class="mb-4">Produtos</h3>
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-
-      {% for produto in produtos %}
-        <div class="col">
-          <a href="{% url 'produto_detalhe' produto.id %}" class="text-decoration-none text-dark">
-            <div class="card h-100">
-              {% if produto.imagem %}
-                <img src="{{ produto.imagem.url }}" class="card-img-top" alt="{{ produto.nome }}">
-              {% endif %}
-              <div class="card-body">
-                <h5 class="card-title">{{ produto.nome }}</h5>
-                <p class="card-text">Marca: {{ produto.marca }}<br>R$ {{ produto.preco }}</p>
-              </div>
-            </div>
-          </a>
-        </div>
-      {% empty %}
-        <p>Nenhum produto encontrado.</p>
-      {% endfor %}
+    <div class="row row-cols-1 row-cols-md-3 g-4" id="produtos-container">
+      <!-- Os produtos serão carregados dinamicamente aqui -->
     </div>
   </main>
 
 </div>
+
+<script>
+  async function carregarProdutos() {
+    try {
+      const resposta = await fetch('/produtos-json' + window.location.search);
+      const produtos = await resposta.json();
+      const container = document.getElementById('produtos-container');
+      container.innerHTML = '';
+
+      if (produtos.length === 0) {
+        container.innerHTML = '<p>Nenhum produto encontrado.</p>';
+        return;
+      }
+
+      produtos.forEach(produto => {
+        const card = document.createElement('div');
+        card.className = 'col';
+
+        const imagemUrl = produto.imagem && !produto.imagem.startsWith('http')
+          ? '/media/' + produto.imagem
+          : produto.imagem || '';
+
+        card.innerHTML = `
+          <a href="/produto/${produto.id}" class="text-decoration-none text-dark">
+            <div class="card h-100">
+              ${imagemUrl ? `<img src="${imagemUrl}" class="card-img-top" alt="${produto.nome}">` : ''}
+              <div class="card-body">
+                <h5 class="card-title">${produto.nome}</h5>
+                <p class="card-text">Marca: ${produto.marca}<br>R$ ${produto.preco}</p>
+              </div>
+            </div>
+          </a>
+        `;
+
+        container.appendChild(card);
+      });
+    } catch (erro) {
+      console.error('Erro ao carregar produtos:', erro);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', carregarProdutos);
+</script>
 {% endblock %}

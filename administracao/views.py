@@ -7,6 +7,8 @@ from .models import Promocao
 from datetime import date
 
 def dashboard(request):
+    """Função para retornar o dashboard do painel administrativo do site
+    """    
     produtos = Produto.objects.all()
     produtos_vencendo = Produto.objects.filter(validade__lte=date.today())
     return render(request, 'administracao/dashboard.html', {
@@ -16,6 +18,8 @@ def dashboard(request):
 
 
 def produtos(request):
+    """Função para renderizar a lista de produtos no painel administrativo
+    """    
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
     categoria_id = request.GET.get('categoria')
@@ -37,8 +41,11 @@ def produtos(request):
         'filtro_data_fim': data_fim,
         'filtro_categoria': int(categoria_id) if categoria_id else '',
     })
+   
     
 def nova_promocao(request):
+    """Função que permite cadastrar uma nova promoção
+    """    
     if request.method == 'POST':
         form = PromocaoForm(request.POST)
         if form.is_valid():
@@ -49,6 +56,8 @@ def nova_promocao(request):
     return render(request, 'administracao/nova_promocao.html', {'form': form})
 
 def editar_promocao(request, promocao_id):
+    """Função que permite editar a promoção
+    """    
     promocao = get_object_or_404(Promocao, id=promocao_id)
     if request.method == 'POST':
         form = PromocaoForm(request.POST, instance=promocao)
@@ -59,13 +68,19 @@ def editar_promocao(request, promocao_id):
         form = PromocaoForm(instance=promocao)
     return render(request, 'administracao/nova_promocao.html', {'form': form})
 
+
 def inativar_promocao(request, promocao_id):
+    """Função que permite inativar uma promoção
+    """  
     promocao = get_object_or_404(Promocao, id=promocao_id)
     promocao.ativa = False
     promocao.save()
     return redirect('admin_dashboard')
 
+
 def promocoes(request):
+    """Função que retorna as promoções do site
+    """  
     promocoes_ativas = Promocao.objects.filter(ativa=True)
     promocoes_inativas = Promocao.objects.filter(ativa=False)
     return render(request, 'administracao/promocoes.html', {
@@ -75,6 +90,8 @@ def promocoes(request):
     
 
 def novo_produto(request):
+    """Função que permite cadastrar um novo produto no site
+    """    
     if request.method == 'POST':
         form = ProdutoForm(request.POST, request.FILES)
         if form.is_valid():
@@ -107,6 +124,8 @@ def novo_produto(request):
 
 
 def editar_produto(request, produto_id):
+    """Função para editar o cadastro de um produto listado no site
+    """    
     produto = get_object_or_404(Produto, id=produto_id)
     if request.method == 'POST':
         form = ProdutoForm(request.POST, request.FILES, instance=produto)
@@ -117,7 +136,10 @@ def editar_produto(request, produto_id):
         form = ProdutoForm(instance=produto)
     return render(request, 'administracao/form_produto.html', {'form': form, 'titulo': 'Editar Produto'})
 
+
 def remover_produto(request, produto_id):
+    """Função que permite remover um produto do site
+    """    
     produto = get_object_or_404(Produto, id=produto_id)
     produto.delete()
     return redirect('admin_produtos')

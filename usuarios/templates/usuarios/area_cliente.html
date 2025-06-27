@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Minha Conta{% endblock %}
+
+{% block content %}
+<h2>Bem-vindo(a), {{ request.user.first_name }}!</h2>
+
+<p class="text-muted">Essa é a sua área exclusiva de cliente. Aqui você pode acompanhar seus pedidos, atualizar seus dados e finalizar suas compras com mais segurança.</p>
+
+<div class="row mt-4">
+
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Meus Pedidos</h5>
+        <p class="card-text">Veja o histórico de compras feitas na GlowUp.</p>
+        <a href="#" class="btn btn-outline-primary">Ver pedidos</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Meus Dados</h5>
+        <p class="card-text">Atualize nome, senha ou email da sua conta.</p>
+        <a href="#" class="btn btn-outline-primary">Editar perfil</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Finalizar Compra</h5>
+        <p class="card-text">Conclua sua compra com segurança e estilo.</p>
+        <a href="#" class="btn btn-success">Finalizar agora</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="mt-4">
+  <a href="{% url 'logout' %}" class="btn btn-outline-danger">Sair da conta</a>
+</div>
+{% endblock %}
